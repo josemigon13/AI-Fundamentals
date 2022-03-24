@@ -1,0 +1,206 @@
+<?xml version="1.0"
+encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!-- 
+	Práctica 1 - Nivel 3
+    Inteligencia Artificial (IA) - DECSAI UGR
+    3º Doble Grado en Matemáticas e Ingeniería Informática
+    Alumno: José Miguel González Cañadas
+-->
+
+<!--
+
+	FUNCIONES INTERNAS
+
+-->
+
+<category>
+<pattern>TWO FIRST DIGITS <set>horas_validas</set></pattern>
+<template>
+	<srai>TOP <srai>DELETREA <star/></srai></srai><srai>TOP <srai>REMAIN <srai>DELETREA <star/></srai></srai></srai>
+</template>
+</category>
+
+<category>
+<pattern>HORAS CONTIGUAS <set>horas_validas</set> <set>horas_validas</set></pattern>
+<template>
+	<think><set var="dif"><srai>RESTA <srai>ORDINAL <star/></srai> <srai>ORDINAL <star index="2"/></srai></srai></set></think>
+	<condition var="dif">
+		<li value="1">TRUE</li>
+		<li>FALSE</li>
+	</condition>
+</template>
+</category>
+
+<!--
+
+	Calcular si un número es mayor o igual que otro
+
+-->
+
+<!-- EQUAL -->
+<category>
+<pattern>XEQ * XS *</pattern>
+<template>
+	<learn>
+		<category>
+		<pattern><eval><uppercase>XFALSE <star/></uppercase></eval></pattern>
+		<template>TRUE</template>
+		</category>
+	</learn>
+	<srai>XFALSE <star index="2"/></srai>
+	<learn>
+		<category>
+		<pattern><eval><uppercase>XFALSE <star/></uppercase></eval></pattern>
+		<template>FALSE</template>
+		</category>
+	</learn>
+</template>
+</category>
+
+<!-- GREATER THAN -->
+<category>
+<pattern>XGT 0 XS 0</pattern>
+<template>FALSE</template>
+</category>
+
+<category>
+<pattern>XGT <set>number</set> XS 0</pattern>
+<template>TRUE</template>
+</category>
+
+<category>
+<pattern>XGT 0 XS <set>number</set></pattern>
+<template>FALSE</template>
+</category>
+
+<category>
+<pattern>XGT <set>number</set> XS <set>number</set></pattern>
+<template>
+	<srai>XGT <map name="predecessor"><star index="1" /></map> XS <map name="predecessor"><star index="2" /></map></srai>
+</template>
+</category>
+
+<!-- GREATER THAN OR EQUAL TO -->
+<category>
+<pattern>XGE <set>number</set> XS <set>number</set></pattern>
+<template>
+	<think><set var="matched"><srai>XEQ <star index="1" /> XS <star index="2" /></srai></set></think>
+	<condition var="matched">
+		<li value="TRUE">TRUE</li>
+		<li><srai>XGT <star index="1" /> XS <star index="2" /></srai></li>
+	</condition>
+</template>
+</category>
+
+<category>
+<pattern>
+	INTERVALOS * 
+</pattern>
+<template>
+	<think><set var="it"><srai>ITERATE <star/></srai></set>
+	<set var="intervalos"></set>
+	<set var="iso">TRUE</set>
+	<set var="mapname">hr_rel</set>
+	<set var="evening"><srai>XGE <srai>TWO FIRST DIGITS <get var="it"/></srai> XS 13</srai></set>
+	<condition var="evening">
+		<li value="TRUE"><set var="intervalos">por la tarde </set></li>
+		<li><set var="intervalos">por la mañana </set></li>
+	</condition>
+
+	<condition var="it">
+		<li value="$">
+			<get var="intervalos"/>
+		</li>
+		<li>
+			<set var="cpit"><get var="it"/></set>
+			<set var="it"><srai>NEXT</srai></set>
+			<set var="cpeven"><get var="evening"/></set>
+			<set var="c"><map><name><get var="mapname"/></name><srai>TWO FIRST DIGITS <get var="it"/></srai></map></set>
+			<condition var="c">
+				<li value="unknown">
+					<condition var="iso">
+						<li value="TRUE">
+							<set var="intervalos"><get var="intervalos"/> a <map><name><get var="mapname"/></name><srai>TWO FIRST DIGITS <get var="cpit"/></srai></map></set>
+						</li>
+						<li>
+							<set var="intervalos"><get var="intervalos"/> hasta <map><name><get var="mapname"/></name><srai>TWO FIRST DIGITS <get var="cpit"/></srai></map></set>
+						</li>
+					</condition>
+				</li>
+				<li>
+					<set var="evening"><srai>XGE <srai>TWO FIRST DIGITS <get var="it"/></srai> XS 13</srai></set>
+					<set var="equal"><srai>XEQ <get var="evening"/> XS <get var="cpeven"/></srai></set>
+					<condition var="equal">
+						<li value="TRUE">
+							<set var="contiguas"><srai>HORAS CONTIGUAS <get var="it"/> <get var="cpit"/></srai></set>
+							<condition var="contiguas">
+								<li value="FALSE">
+									<condition var="iso">
+										<li value="TRUE">
+											<set var="intervalos"><get var="intervalos"/> a <map><name><get var="mapname"/></name><srai>TWO FIRST DIGITS <get var="cpit"/></srai></map>,</set>
+										</li>
+										<li>
+											<set var="iso">TRUE</set>
+											<set var="intervalos"><get var="intervalos"/> hasta <map><name><get var="mapname"/></name><srai>TWO FIRST DIGITS <get var="cpit"/></srai></map>,</set>
+										</li>
+									</condition>
+								</li>
+								<li value="TRUE">
+									<condition var="iso">
+										<li value="TRUE">
+											<set var="iso">FALSE</set>
+											<set var="intervalos"><get var="intervalos"/> desde <map><name><get var="mapname"/></name><srai>TWO FIRST DIGITS <get var="cpit"/></srai></map></set>
+										</li>
+									</condition>
+								</li>
+							</condition>
+						</li>
+						<li>
+							<condition var="iso">
+								<li value="TRUE">
+									<set var="intervalos"><get var="intervalos"/> a <map><name><get var="mapname"/></name><srai>TWO FIRST DIGITS <get var="cpit"/></srai></map></set>
+								</li>
+								<li>
+									<set var="iso">TRUE</set>
+									<set var="intervalos"><get var="intervalos"/> hasta <map><name><get var="mapname"/></name><srai>TWO FIRST DIGITS <get var="cpit"/></srai></map></set>
+								</li>
+							</condition>
+							<set var="preintervalos"><get var="intervalos"/></set>
+							<condition var="intervalos">
+								<li value="por la mañana desde las ocho hasta las doce">
+									<set var="intervalos">toda la mañana y por la tarde</set>
+								</li>
+								<li>
+									<set var="intervalos"><get var="intervalos"/> y por la tarde</set>
+								</li>
+							</condition>
+							<set var="posintervalos"><get var="intervalos"/></set>
+						</li>
+					</condition>
+				</li>
+			</condition>
+		<loop/></li>
+	</condition>
+	<condition var="intervalos">
+		<li><value><get var="posintervalos"/> desde la una hasta las ocho</value>
+			<condition var="posintervalos">
+				<li value="toda la mañana y por la tarde">
+					<set var="intervalos">todo el día</set>
+				</li>
+				<li><set var="intervalos"><get var="preintervalos"/> y toda la tarde</set></li>
+			</condition>
+		</li>
+		<li value="por la mañana desde las ocho hasta las doce">
+			<set var="intervalos">toda la mañana</set>
+		</li>
+		<li value="por la tarde desde la una hasta las ocho">
+			<set var="intervalos">toda la tarde</set>
+		</li>
+	</condition></think>
+	<get var="intervalos"/>
+</template>
+</category>
+
+</aiml>

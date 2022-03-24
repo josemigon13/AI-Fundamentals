@@ -1,0 +1,154 @@
+<?xml version="1.0"
+encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!-- 
+    Práctica 1 - Nivel 0
+    Inteligencia Artificial (IA) - DECSAI UGR
+    3º Doble Grado en Matemáticas e Ingeniería Informática
+    Alumno: José Miguel González Cañadas 
+-->
+<!--
+
+Pregunta 1: En qué estación estamos
+
+-->
+
+<category> 
+<pattern>^ [época estación etapa fase instante momento] ^ (nos) [estamos encontramos situamos] ^</pattern>
+<template>
+    Ahora mismo nos encontramos en <lowercase><srai>SEASON</srai></lowercase>. Es una estación estupenda. ¿No te parece?
+</template>
+</category>
+
+<category> 
+<pattern>^ [época estación etapa fase instante momento] ^ [actual anyo presente] ^</pattern>
+<template>
+	<srai>EN QUÉ ESTACIÓN ESTAMOS</srai>
+</template>
+</category>
+
+<category> 
+<pattern>^ [actual presente] ^ [época estación etapa fase instante momento] ^</pattern>
+<template>
+	<srai>EN QUÉ ESTACIÓN ESTAMOS</srai>
+</template>
+</category>
+
+<!--
+
+Pregunta 2: En qué fase del día estamos
+
+-->
+
+<category>
+<pattern>^ [etapa fase instante momento] ^ [día jornada] ^</pattern>
+<template>Ahora mismo es por la <lowercase><srai>DAY PHASE</srai></lowercase></template>
+</category>
+
+<!--
+
+Pregunta 3: Qué día de la semana es <hoy/manyana/pasado manyana>
+
+-->
+
+<category>
+<pattern>^ [será es cae+ va] (a ser) (el día de) <set>especifica_dia</set></pattern>
+<template>
+    <think><set var="local"><star index="2"/></set></think>
+    <condition var="local">
+    	<li><value>hoy</value>Hoy es <lowercase><srai>DAY</srai></lowercase></li>
+    	<li><value>manyana</value>Mañana será <lowercase><srai>TOMORROW</srai></lowercase></li>
+    	<li><value>pasado manyana</value>Pasado mañana será <lowercase><srai>DAY AFTER TOMORROW</srai></lowercase></li>
+    </condition>
+</template>
+</category>
+
+<category>
+<pattern>(El día de) <set>especifica_dia</set> ^ [cae+ es será va] (a ser)</pattern>
+<template>
+    <srai>QUÉ DÍA DE LA SEMANA ES <star/></srai>
+</template>
+</category>
+
+<!--
+
+Pregunta 4: Qué fecha será dentro de una semana
+
+-->
+
+<category>
+<pattern>CUARTA PREGUNTA</pattern>
+<template>
+    <!-- Método N2 -->
+    La semana que viene será <srai>DAYTO2DIGITS <srai>DATE IN 7 DAYS</srai></srai>
+</template>
+</category>
+
+<category>
+<pattern>^ [cae+ día fecha es será va] (a ser) ^ semana que viene ^</pattern>
+<template><srai>CUARTA PREGUNTA</srai></template>
+</category>
+
+<category>
+<pattern>^ [cae+ día fecha es será va] (a ser) ^ [en dentro] (de) [siete 7] días ^</pattern>
+<template><srai>CUARTA PREGUNTA</srai></template>
+</category>
+
+<category>
+<pattern>^ [cae+ día fecha es será va] (a ser) ^ [dentro en] (de) una semana ^</pattern>
+<template><srai>CUARTA PREGUNTA</srai></template>
+</category>
+
+<category>
+<pattern>^ semana que viene ^ [cae+ día fecha es será va] (a ser) ^</pattern>
+<template><srai>CUARTA PREGUNTA</srai></template>
+</category>
+
+<category>
+<pattern>^ [en dentro] (de) [siete 7] días ^ [cae+ día fecha es será va] (a ser) ^</pattern>
+<template><srai>CUARTA PREGUNTA</srai></template>
+</category>
+
+<category>
+<pattern>^ [dentro en] (de) una semana ^ [cae+ día fecha es será va] (a ser) ^</pattern>
+<template><srai>CUARTA PREGUNTA</srai></template>
+</category>
+
+<!--
+
+Pregunta 5: Qué fecha será el próximo [Lunes Martes ... Domingo]
+
+-->
+
+<category>
+<pattern>^ [cae+ fecha día es será va] (a ser) ^ [próximo siguiente] <set>weekday_es</set></pattern>
+<template>
+    <think><set var="weekday"><star index="3"/></set></think>
+    <!-- Método del nivel 2 -->
+    El próximo <get var="weekday"/> será <srai>DAYTO2DIGITS <srai>DATE ON <get var="weekday"/></srai></srai>
+</template>
+</category>
+
+<category>
+<pattern>^ [cae+ fecha día es será va] (a ser) ^ <set>weekday_es</set> [próximo siguiente que] (viene)</pattern>
+<template>
+    <srai>FECHA PRÓXIMO <star index="3"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>^ [próximo siguiente] <set>weekday_es</set> ^ [cae+ fecha día es será va] (a ser) ^</pattern>
+<template>
+    <srai>FECHA PRÓXIMO <star index="2"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>^ <set>weekday_es</set> [próximo siguiente que] (viene) ^ [cae+ fecha día es será va] (a ser) ^</pattern>
+<template>
+    <srai>FECHA PRÓXIMO <star index="2"/></srai>
+</template>
+</category>
+
+</aiml>

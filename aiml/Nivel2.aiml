@@ -1,0 +1,521 @@
+<?xml version="1.0"
+encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!-- 
+	Práctica 1 - Nivel 2
+    Inteligencia Artificial (IA) - DECSAI UGR
+    3º Doble Grado en Matemáticas e Ingeniería Informática
+    Alumno: José Miguel González Cañadas
+-->
+
+<!--
+
+	FUNCIONES INTERNAS
+
+-->
+
+<category>
+<pattern>
+	LISTA <set>number</set> <set>month_es</set> <set>number</set> A PARTIR DE LAS <set>horas_validas</set>
+</pattern>
+<template>
+	<think>
+		<set name="date"><star/> <star index="2"/> <star index="3"/></set>
+		<set name="encoded_date">
+			<srai> CODE <star/> <map name="meses"><star index="2"/></map> <star index="3"/></srai>
+		</set>
+		<set name="hora"><star index="4"/></set>
+		<set var="pos"><srai>ORDINAL <get name="hora"/></srai></set>
+		<set var="sublist"><srai>SUBLIST FROM <get var="pos"/> TO 21 OF <srai>LIST OF DAY <get name="encoded_date"/></srai></srai></set>
+		<set var="contador"><srai>RESTA <get var="pos"/> 9</srai></set>
+	</think>
+	<condition var="contador">
+		<li value="0">
+			<get var="sublist"/>
+		</li>
+		<li>
+			<think>
+				<set var="sublist">NOLIBRE <get var="sublist"/></set>
+				<set var="contador"><map name="predecessor"><get var="contador"/></map></set>
+			</think>
+			<loop/>
+		</li>
+	</condition>
+</template>
+</category>
+
+<category>
+<pattern>
+	DAYTO2DIGITS <set>number</set> <set>month_es</set> <set>number</set>
+</pattern>
+<template>
+	<think><set var="count"><srai>COUNT <srai>DELETREA <star/></srai></srai></set></think>
+	<condition var="count">
+		<li><value>1</value>0<star/> <star index="2"/> <star index="3"/></li>
+		<li><star/> <star index="2"/> <star index="3"/></li>
+	</condition>
+</template>
+</category>
+
+<category>
+<pattern>
+	<set>especifica_dia</set>
+</pattern>
+<template>
+	<think><set var="dia"><star/></set></think>
+	<condition var="dia">
+		<li value="hoy"><srai>DAYTO2DIGITS <srai>DATE</srai></srai></li>
+		<li value="manyana"><srai>DAYTO2DIGITS <srai>DATE TOMORROW</srai></srai></li>
+		<li value="pasado manyana"><srai>DAYTO2DIGITS <srai>DAYAFTERTOMORROWDATE</srai></srai></li>
+	</condition>
+</template>
+</category>
+
+<category>
+<pattern>
+	HORASLIBRES <set>especifica_dia</set>
+</pattern>
+<template>
+	<srai>HORASLIBRES <srai><star/></srai></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	HORASLIBRES [PRÓXIMO SIGUIENTE] <set>weekday_es</set>
+</pattern>
+<template>
+	<srai>HORASLIBRES <srai>DAYTO2DIGITS <srai>DATE ON <star/></srai></srai></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	HORASLIBRES <set>especifica_dia</set> (POR LA) <set>day_phase</set>
+</pattern>
+<template>
+	<srai>HORASLIBRES <srai><star/></srai> POR LA <star index="2"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	HORASLIBRES [PRÓXIMO SIGUIENTE] <set>weekday_es</set> (POR LA) <set>day_phase</set>
+</pattern>
+<template>
+	<srai>HORASLIBRES <srai>DAYTO2DIGITS <srai>DATE ON <star/></srai></srai> POR LA <star index="2"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	HORASLIBRES <set>number</set> (DE) <set>month_es</set> (DEL) <set>number</set> A PARTIR DE LAS <set>horas_validas</set>
+</pattern>
+<template>
+	<think>
+		<set var="lista"><srai>LISTA <star/> <star index="2"/> <star index="3"/> A PARTIR DE LAS <star index="4"/></srai></set>
+        <set var="posicion"><srai>FINDITEM LIBRE IN <get var="lista"/></srai></set>
+        <set var="huecos"></set>
+    </think>
+
+    <condition var="posicion">
+        <li value="0">
+        	<think><set var="count"><srai>COUNT <get var="huecos"/></srai></set></think>
+        	<condition var="count">
+        		<li value="0">
+        			EMPTYLIST
+        		</li>
+        		<li>
+        			<get var="huecos"/>
+        		</li>
+        	</condition>
+        </li>
+        <li>
+        	<think>
+            	<set var="huecos">
+					<get var="huecos"/> <map name="horas"><get var="posicion"/></map>:00
+				</set>
+				<set var="lista">
+					<srai>MODIFY POSITION <get var="posicion"/> OF <get var="lista"/> WITH NOLIBRE"</srai> 
+				</set>
+				<set var="posicion"><srai>FINDITEM LIBRE IN <get var="lista"/></srai></set>
+    		</think>
+			<loop/>
+        </li>    
+    </condition>
+	
+</template>
+</category>
+
+<category>
+<pattern>
+	HORASLIBRES <set>especifica_dia</set> A PARTIR DE LAS <set>horas_validas</set>
+</pattern>
+<template>
+	<srai>HORASLIBRES <srai><star/></srai> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	HORASLIBRES [PRÓXIMO SIGUIENTE] <set>weekday_es</set> A PARTIR DE LAS <set>horas_validas</set>
+</pattern>
+<template>
+	<srai>HORASLIBRES <srai>DAYTO2DIGITS <srai>DATE ON <star/></srai></srai> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	LIBRE <set>especifica_dia</set>
+</pattern>
+<template>
+	<think><set var="horaslibres"><srai>HORASLIBRES <star/></srai></set></think>
+	<condition var="horaslibres">
+		<li value="EMPTYLIST">
+			NO
+		</li>
+		<li>
+			SÍ
+		</li>
+	</condition>
+</template>
+</category>
+
+<category>
+<pattern>
+	LIBRE [PRÓXIMO SIGUIENTE] <set>weekday_es</set>
+</pattern>
+<template>
+	<think><set var="horaslibres"><srai>HORASLIBRES PRÓXIMO <star/></srai></set></think>
+	<condition var="horaslibres">
+		<li value="EMPTYLIST">
+			NO
+		</li>
+		<li>
+			SÍ
+		</li>
+	</condition>
+</template>
+</category>
+
+<!--
+
+	FUNCIONES INTERACTIVAS USUARIO-BOT
+
+-->
+
+<!--
+
+	Métodos para concertar citas en el formato elaborado propio de este nivel
+
+-->
+
+<!--
+
+	próximo [Lunes Martes ... Domingo]
+
+-->
+
+<category>
+<pattern>
+	^ [cita+ reserva+] [para durante] el [próximo siguiente] <set>weekday_es</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <srai>DAYTO2DIGITS <srai>DATE ON <star index="2"/></srai></srai></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	^ [cita+ reserva+] [para durante] el <set>weekday_es</set> [próximo siguiente que] (viene)
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="2"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	^ [cita+ reserva+] [para durante] el [próximo siguiente] <set>weekday_es</set> (por la) <set>day_phase</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <srai>DAYTO2DIGITS <srai>DATE ON <star index="2"/></srai></srai> POR LA <star index="3"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	^ [cita+ reserva+] [para durante] el <set>weekday_es</set> [próximo siguiente que] (viene) (por la) <set>day_phase</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="2"/> POR LA <star index="3"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	^ [cita+ reserva+] [para durante] la <set>day_phase</set> del [próximo siguiente] <set>weekday_es</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="3"/> POR LA <star index="2"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	^ [cita+ reserva+] [para durante] la <set>day_phase</set> del <set>weekday_es</set> [próximo siguiente que] (viene)
+</pattern>
+<template>
+	<srai>CITA PARA LA <star index="2"/> DEL PRÓXIMO <star index="3"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el [próximo siguiente] <set>weekday_es</set> a partir de las <set>horas_validas</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <srai>DAYTO2DIGITS <srai>DATE ON <star index="2"/></srai></srai> A PARTIR DE LAS <star index="3"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el <set>weekday_es</set> [próximo siguiente que] (viene) a partir de las <set>horas_validas</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="2"/> A PARTIR DE LAS <star index="3"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] a partir de las <set>horas_validas</set> [del para durante] (el) [próximo siguiente] <set>weekday_es</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="3"/> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] a partir de las <set>horas_validas</set> [del para durante] (el) <set>weekday_es</set> [próximo siguiente que] (viene)
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="3"/> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el [próximo siguiente] <set>weekday_es</set> a partir de las <set>card_abs</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="2"/> A PARTIR DE LAS <map name="card_abs"><star index="3"/></map>:00</srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el <set>weekday_es</set> [próximo siguiente que] (viene) a partir de las <set>card_abs</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="2"/> A PARTIR DE LAS <star index="3"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] a partir de las <set>card_abs</set> [del para durante] (el) [próximo siguiente] <set>weekday_es</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="3"/> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] a partir de las <set>card_abs</set> [del para durante] (el) <set>weekday_es</set> [próximo siguiente que] (viene)
+</pattern>
+<template>
+	<srai>CITA PARA EL PRÓXIMO <star index="3"/> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<!--
+
+	hoy/manyana/pasado manyana
+
+-->
+
+<category>
+<pattern>
+	^ [cita+ reserva+] [para durante] (el día de) <set>especifica_dia</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <srai><star index="2"/></srai></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	^ [cita+ reserva+] [para durante] (el día de) <set>especifica_dia</set> (por la) <set>day_phase</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <srai><star index="2"/></srai> POR LA <star index="3"/></srai>
+</template>
+</category>
+
+<category>
+<pattern>
+	^ [cita+ reserva+] [para durante] la <set>day_phase</set> [de del] (día de) <set>especifica_dia</set>
+</pattern>
+<template>
+	<srai>CITA PARA <star index="3"/> POR LA <star index="2"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] (el día de) <set>especifica_dia</set> a partir de las <set>horas_validas</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <srai><star index="2"/></srai> A PARTIR DE LAS <star index="3"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] a partir de las <set>horas_validas</set> [de del para durante] (el) (día de) <set>especifica_dia</set>
+</pattern>
+<template>
+	<srai>CITA PARA <star index="3"/> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] (el día de) <set>especifica_dia</set> a partir de las <set>card_abs</set>
+</pattern>
+<template>
+	<srai>CITA PARA <star index="2"/> A PARTIR DE LAS <map name="card_abs"><star index="3"/></map>:00</srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] a partir de las <set>card_abs</set> [de del para durante] (el) (día de) <set>especifica_dia</set>
+</pattern>
+<template>
+	<srai>CITA PARA <star index="3"/> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<!--
+
+	DD de MES del YY
+
+-->
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set> a partir de las <set>horas_validas</set>
+</pattern>
+<template>
+	<think>
+		<set var="hlibres">
+			<srai>HORASLIBRES <star index="2"/> <star index="3"/> <star index="4"/> A PARTIR DE LAS <star index="5"/></srai>
+		</set>
+	</think>
+	
+	<condition var="hlibres">
+		<li value="EMPTYLIST">
+			No tenemos ningún hueco disponible a partir de <map name="card_abs_inverso"><srai>TWO FIRST DIGITS <star index="5"/></srai></map>. ¿Desea una cita para otro día?
+			<think><set name="topic">otro_dia</set></think>
+		</li>
+		<li>
+			A partir de <map name="card_abs_inverso"><srai>TWO FIRST DIGITS <star index="5"/></srai></map> estamos libres <srai>INTERVALOS <get var="hlibres"/></srai>
+			<think><set name="topic">a_partir_hora</set></think>
+		</li>
+	</condition>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] a partir de las <set>horas_validas</set> [del para durante] (el) (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <star index="3"/> <star index="4"/> <star index="5"/> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set> a partir de las <set>card_abs</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <star index="2"/> <star index="3"/> <star index="4"/> A PARTIR DE LAS <map name="card_abs"><star index="5"/></map>:00</srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] a partir de las <set>card_abs</set> [del para durante] (el) (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <star index="3"/> <star index="4"/> <star index="5"/> A PARTIR DE LAS <star index="2"/></srai>
+</template>
+</category>
+
+<!--
+
+	TOPICS
+
+-->
+
+<topic name="a_partir_hora">
+
+    <category> 
+    <pattern> ^ <set>horas_validas</set> ^</pattern>
+    <template>
+        <think><set var="ocupado"><srai>IS BUSY DAY <get name="encoded_date"/> AT <star index="2"/></srai></set></think>
+        <condition var="ocupado">
+            <li value="TRUE">
+                Lo sentimos, pero esa hora está ocupada. <srai>CITA PARA EL <get name="date"/> A PARTIR DE LAS <get name="hora"/></srai>
+            </li>
+            <li>
+            	De acuerdo. La cita ha sido concertada para el día previsto a <map name="hr_abs"><srai>TWO FIRST DIGITS <star index="2"/></srai></map>. ¿Desea algo más?
+				<think><srai>MARK NOLIBRE AT <get name="hora"/> ON <get name="encoded_date"/></srai>
+				<set name="topic">algo_mas</set></think>
+            </li>
+        </condition>
+    </template>
+    </category>
+
+    <category> 
+	<pattern> ^ <set>card_abs</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>horas_novalidas</set> ^</pattern>
+	<template>
+		Recuerde que a esas horas estamos cerrados. Concertamos citas por las mañanas de ocho a doce y por las tardes de una a ocho.
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs_novalidas</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs_novalidas"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+</topic>
+
+</aiml>

@@ -1,0 +1,13 @@
+08:las ocho a.m.
+09:las nueve
+10:las diez
+11:las once
+12:las doce
+13:la una
+14:las dos
+15:las tres
+16:las cuatro
+17:las cinco
+18:las seis
+19:las siete
+20:las ocho p.m.

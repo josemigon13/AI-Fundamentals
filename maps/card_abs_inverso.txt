@@ -1,0 +1,13 @@
+08:las ocho de la manyana
+09:las nueve de la manyana
+10:las diez de la manyana
+11:las once de la manyana
+12:las doce de la manyana
+13:la una de la tarde
+14:las dos de la tarde
+15:las tres de la tarde
+16:las cuatro de la tarde
+17:las cinco de la tarde
+18:las seis de la tarde
+19:las siete de la tarde
+20:las ocho de la tarde

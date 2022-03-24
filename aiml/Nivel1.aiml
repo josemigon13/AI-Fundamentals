@@ -1,0 +1,844 @@
+<?xml version="1.0"
+encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!-- 
+	Práctica 1 - Nivel 1
+    Inteligencia Artificial (IA) - DECSAI UGR
+    3º Doble Grado en Matemáticas e Ingeniería Informática
+    Alumno: José Miguel González Cañadas
+-->
+
+<!--
+
+	FUNCIONES INTERNAS
+
+-->
+
+<!--
+
+	Dado un día devuelve su lista en la agenda de manyana/tarde
+
+-->
+
+<category>
+<pattern>
+	LISTA <set>day_phase</set> <set>number</set> <set>month_es</set> <set>number</set>
+</pattern>
+<template>
+	<think>
+		<set name="date"><star index="2"/> <star index="3"/> <star index="4"/></set>
+		<set name="encoded_date">
+			<srai> CODE <star index="2"/> <map name="meses"><star index="3"/></map> <star index="4"/></srai>
+		</set>
+		<set var="day_phase"><star/></set> 
+	</think>
+
+	<condition var="day_phase">
+		<li value="MANYANA">
+			<srai>SUBLIST FROM 9 TO 13 OF <srai>LIST OF DAY <get name="encoded_date"/></srai></srai>
+		</li>
+		<li value="TARDE">
+			<think>
+				<set var="sublist">
+					<srai>SUBLIST FROM 14 TO 21 OF <srai>LIST OF DAY <get name="encoded_date"/></srai></srai>
+				</set>
+				<set var="contador">0</set>
+			</think>
+			<condition var="contador">
+				<li value="5">
+					<get var="sublist"/>
+				</li>
+				<li>
+					<think>
+						<set var="sublist">NOLIBRE <get var="sublist"/></set>
+						<set var="contador"><map name="successor"><get var="contador"/></map></set>
+					</think>
+				<loop/>
+				</li>
+			</condition>                                 
+		</li>
+	</condition>
+</template>
+</category>
+
+<!--
+
+	Dado un día devuelve las horas libres por la manyana/tarde
+
+-->
+
+<category>
+<pattern>
+	HORASLIBRES <set>number</set> (de) <set>month_es</set> (del) <set>number</set> (POR LA) <set>day_phase</set>
+</pattern>
+<template>
+	<think>
+		<set var="lista">
+			<srai>LISTA <star index="4"/> <star index="1"/> <star index="2"/> <star index="3"/></srai>
+		</set>
+		<set var="huecos"></set>
+        <set var="posicion"><srai>FINDITEM LIBRE IN <get var="lista"/></srai></set>
+    </think>
+
+    <condition var="posicion">
+        <li value="0">
+        	<think><set var="count"><srai>COUNT <get var="huecos"/></srai></set></think>
+        	<condition var="count">
+        		<li value="0">
+        			EMPTYLIST
+        		</li>
+        		<li>
+        			<get var="huecos"/>
+        		</li>
+        	</condition>
+        </li>
+        <li>
+        	<think>
+            	<set var="huecos">
+					<get var="huecos"/> <map name="horas"><get var="posicion"/></map>:00
+				</set>
+				<set var="lista">
+					<srai>MODIFY POSITION <get var="posicion"/> OF <get var="lista"/> WITH NOLIBRE"</srai> 
+				</set>
+				<set var="posicion"><srai>FINDITEM LIBRE IN <get var="lista"/></srai></set>
+    		</think>
+			<loop/>
+        </li>   
+    </condition>
+	
+</template>
+</category>
+
+<!--
+
+	Dado un día devuelve las horas libres
+
+-->
+
+<category>
+<pattern>
+	HORASLIBRES <set>number</set> (de) <set>month_es</set> (del) <set>number</set>
+</pattern>
+<template>
+
+	<think>
+		<set name="hlmanyana">
+			<srai>HORASLIBRES <star/> <star index="2"/> <star index="3"/> POR LA MANYANA</srai>
+		</set>
+		<set name="hltarde">
+			<srai>HORASLIBRES <star/> <star index="2"/> <star index="3"/> POR LA TARDE</srai>
+		</set>
+	</think>
+
+	<condition name="hlmanyana">
+		<li value="EMPTYLIST">
+			<condition name="hltarde">
+				<li value="EMPTYLIST">
+					EMPTYLIST
+				</li>
+				<li>
+					<get name="hltarde"/>
+				</li>
+			</condition>
+		</li>
+		<li>
+			<condition name="hltarde">
+				<li value="EMPTYLIST">
+					<get name="hlmanyana"/>
+				</li>
+				<li>
+					<get name="hlmanyana"/> <get name="hltarde"/>
+				</li>
+			</condition>
+		</li>
+	</condition>
+
+</template>
+</category>
+
+<!--
+
+	Dado un día devuelve si tiene al menos una hora LIBRE
+
+-->
+
+<category>
+<pattern>
+	LIBRE <set>number</set> (de) <set>month_es</set> (del) <set>number</set>
+</pattern>
+<template>
+
+	<think>
+		<set var="horaslibres">
+			<srai>HORASLIBRES <star/> <star index="2"/> <star index="3"/></srai>
+		</set>
+	</think>
+
+	<condition var="horaslibres">
+		<li value="EMPTYLIST">
+			NO
+		</li>
+		<li>
+			SÍ
+		</li>
+	</condition>
+
+</template>
+</category>
+
+<!--
+
+	FUNCIONES INTERACTIVAS USUARIO-BOT
+
+-->
+
+<!--
+
+	EL USUARIO SÓLO TIENE CLARO EL DÍA
+
+-->
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set>
+</pattern>
+<template>
+	<think><set var="dialibre"><srai>LIBRE <star index="2"/> <star index="3"/> <star index="4"/></srai></set></think>
+	<condition var="dialibre">
+		<li value="NO">
+			Lo sentimos, el día está completo. ¿Desea algún otro día?
+			<think><set name="topic">otro_dia</set></think>
+		</li>
+		<li>
+			<condition name="hlmanyana">
+				<li value="EMPTYLIST">
+					La mañana está ocupada pero estamos libres <srai>INTERVALOS <get name="hltarde"/></srai>
+					<think><set name="topic">tarde</set></think>
+				</li>
+				<li>
+					<condition name="hltarde">
+						<li value="EMPTYLIST">
+							Estamos libres <srai>INTERVALOS <get name="hlmanyana"/></srai>, pero la tarde está entera ocupada.
+							<think><set name="topic">manyana</set></think>
+						</li>
+						<li>
+							Estamos libres <srai>INTERVALOS <get name="hlmanyana"/> <get name="hltarde"/></srai>
+							<think><set name="topic">manyana_y_tarde</set></think>
+						</li>
+					</condition>
+				</li>
+			</condition>
+		</li>
+	</condition>
+</template>
+</category>
+
+<!--
+
+	EL USUARIO TIENE CLARO QUE QUIERE LA CITA POR LA MANYANA/TARDE
+
+-->
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set> (por la) <set>day_phase</set>
+</pattern>
+<template>
+	<think>
+		<set var="day_phase"><star index="5"/></set>
+		<set var="horaslibres">
+			<srai>HORASLIBRES <star index="2"/> <star index="3"/> <star index="4"/> POR LA <get var="day_phase"/></srai>
+		</set>
+		<condition var="day_phase">
+			<li value="manyana"><set var="other_phase">tarde</set></li>
+			<li><set var="other_phase">manyana</set></li>
+		</condition>
+	</think>
+	<condition var="horaslibres">
+		<li value="EMPTYLIST">
+			<think><set var="hlotra"><srai>HORASLIBRES <get name="date"/> POR LA <get var="other_phase"/></srai></set></think>
+			<condition var="hlotra">
+				<li value="EMPTYLIST">
+					La <get var="day_phase"/> está ocupada. Hemos consultado el horario de <get var="other_phase"/> y tampoco es posible. ¿Desea otro día?
+					<think><set name="topic">otro_dia</set></think>						
+				</li>
+				<li>
+					La <get var="day_phase"/> está ocupada. Sin embargo, estamos libres <srai>INTERVALOS <get var="hlotra"/></srai>. ¿Le interesa o prefiere otro día?
+					<think><set name="topic"><get var="other_phase"/>_u_otro_dia</set></think>			
+				</li>
+			</condition>
+		</li>
+		<li>
+			Estamos libres <srai>INTERVALOS <get var="horaslibres"/></srai>
+			<think><set name="topic"><get var="day_phase"/></set></think>
+		</li>
+	</condition>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] la <set>day_phase</set> del (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <star index="3"/> <star index="4"/> <star index="5"/> POR LA <star index="2"/></srai>
+</template>
+</category>
+
+<!--
+
+	EL USUARIO TIENE CLARO QUE QUIERE LA CITA UN DÍA Y HORA EXACTOS
+
+-->
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set> a las <set>horas_validas</set>
+</pattern>
+<template>
+	<think>
+		<set name="hldia"><srai>HORASLIBRES <star index="2"/> <star index="3"/> <star index="4"/></srai></set>
+		<set var="ocupado"><srai>IS BUSY DAY <get name="encoded_date"/> AT <star index="5"/></srai></set>
+	</think>
+	<condition var="ocupado">
+		<li value="TRUE">
+			<condition name="hldia">
+				<li value="EMPTYLIST">
+					Lo sentimos, el día está completo. ¿Desea algún otro día?
+					<think><set name="topic">otro_dia</set></think>
+				</li>
+				<li>
+					Lo sentimos. Estamos libres <srai>INTERVALOS <get name="hldia"/></srai>. ¿Le interesa o prefiere concertar su cita en otra fecha?
+					<think><set name="topic">otra_fecha</set></think>
+				</li>
+			</condition>
+		</li>
+		<li>
+			De acuerdo. La cita ha sido concertada para el día previsto a <map name="hr_abs"><srai>TWO FIRST DIGITS <star index="5"/></srai></map>
+			<think><srai>MARK NOLIBRE AT <star index="5"/> ON <get name="encoded_date"/></srai></think>
+		</li>
+	</condition>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para a] las <set>horas_validas</set> del (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <star index="3"/> <star index="4"/> <star index="5"/> A LAS <star index="2"/></srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para durante] el (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set> a las <set>card_abs</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <star index="2"/> <star index="3"/> <star index="4"/> A LAS <map name="card_abs"><star index="5"/></map>:00</srai>
+</template>
+</category>
+
+<category> 
+<pattern>
+	^ [cita+ reserva+] [para a] las <set>card_abs</set> del (día) <set>number</set> (de) <set>month_es</set> (del) <set>number</set>
+</pattern>
+<template>
+	<srai>CITA PARA EL <star index="3"/> <star index="4"/> <star index="5"/> A LAS <star index="2"/></srai>
+</template>
+</category>
+
+<!--
+
+	TOPICS
+
+-->
+
+<topic name="otra_fecha">
+	
+	<category> 
+	<pattern>Me interesa</pattern>
+	<template>
+		<think><set var="count"><srai>COUNT <get name="hldia"/></srai></set></think>
+		<condition var="count">
+			<li value="1">
+				De acuerdo. La cita ha sido concertada para el día previsto a <map name="hr_abs"><srai>TWO FIRST DIGITS <get name="hldia"/></srai></map>. ¿Desea algo más?
+				<think><srai>MARK NOLIBRE AT <get name="hldia"/> ON <get name="encoded_date"/></srai>
+				<set name="topic">algo_mas</set></think>
+			</li>
+			<li>¿Qué hora le viene bien?</li>
+		</condition>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>horas_validas</set> ^</pattern>
+	<template>
+		<srai>CITA PARA EL <get name="date"/> A LAS <star index="2"/></srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>horas_novalidas</set> ^</pattern>
+	<template>
+		Recuerde que a esas horas estamos cerrados. Concertamos citas por las mañanas de ocho a doce y por las tardes de una a ocho.
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs_novalidas</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs_novalidas"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ otr+ [fecha día] ^ </pattern>
+	<template>
+		¿Qué día le viene bien?
+		<think><set name="topic">otro_dia</set></think>
+	</template>
+	</category>
+
+</topic>
+
+<!--
+
+	El usuario escoge un día que está completamente ocupado y se le ofrece otro día
+
+-->
+
+<topic name="otro_dia">
+	
+	<category> 
+	<pattern>[SÍ VALE]</pattern>
+	<template>¿Qué día le viene bien?</template>
+	</category>
+
+	<category> 
+	<pattern>DE ACUERDO</pattern>
+	<template><srai>VALE</srai></template>
+	</category>
+
+	<category> 
+	<pattern>ESTÁ BIEN</pattern>
+	<template><srai>VALE</srai></template>
+	</category>
+
+	<category> 
+	<pattern>^ <set>number</set> (de) <set>month_es</set> (del) <set>number</set> ^</pattern>
+	<that>¿QUÉ DÍA LE VIENE BIEN</that>
+	<template>
+		<srai>CITA PARA EL <star index="2"/> <star index="3"/> <star index="4"/></srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern>^ NO ^</pattern>
+	<template>
+		¡Vuelva cuando quiera!
+		<think><set name="topic">unknown</set></think>
+	</template>
+	</category>
+</topic>
+
+<!--
+
+	El usuario escoge un día por la mañana
+
+-->
+
+<topic name="manyana">
+	
+	<category> 
+	<pattern> ^ <set>horas_manyana</set> ^</pattern>
+	<template>
+		<think><set var="ocupado"><srai>IS BUSY DAY <get name="encoded_date"/> AT <star index="2"/></srai></set></think>
+		<condition var="ocupado">
+			<li value="TRUE">
+				Lo sentimos, pero esa hora está ocupada. <srai>CITA PARA EL <get name="date"/> POR LA MANYANA</srai>
+			</li>
+			<li>
+				De acuerdo. La cita ha sido concertada para el día previsto a <map name="hr_abs"><srai>TWO FIRST DIGITS <star index="2"/></srai></map>. ¿Desea algo más?
+				<think><srai>MARK NOLIBRE AT <star index="2"/> ON <get name="encoded_date"/></srai>
+				<set name="topic">algo_mas</set></think>
+			</li>
+		</condition>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs_manyana</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs_manyana"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>horas_tarde</set> ^</pattern>
+	<template>
+		Recuerde que por la mañana concertamos citas de ocho a doce.
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs_tarde</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs_tarde"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>horas_novalidas</set> ^</pattern>
+	<template>
+		Recuerde que a esas horas estamos cerrados. Concertamos citas por las mañanas de ocho a doce y por las tardes de una a ocho.
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs_novalidas</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs_novalidas"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ me da igual la hora ^ </pattern>
+	<template>
+		<think>
+			<set var="condicion">FALSE</set>
+			<condition var="condicion">
+				<li value="FALSE">
+					<set var="hora"><map name="horas_manyana"><srai> RANDOM 5 </srai></map>:00</set>
+					<set var="ocupado"><srai>IS BUSY DAY <get name="encoded_date"/> AT <get var="hora"/></srai></set>
+					<condition var="ocupado">
+						<li value="FALSE">
+							<set var="condicion">TRUE</set>
+						</li>
+					</condition>
+				<loop/>
+				</li>
+			</condition>
+		</think>
+		De acuerdo. La cita ha sido concertada para el día previsto a <map name="hr_abs"><srai>TWO FIRST DIGITS <get var="hora"/></srai></map>. ¿Desea algo más?
+		<think><srai>MARK NOLIBRE AT <get var="hora"/> ON <get name="encoded_date"/></srai>
+		<set name="topic">algo_mas</set></think>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ cualquier hora ^ </pattern>
+	<template>
+		<srai>ME DA IGUAL LA HORA</srai>
+	</template>
+	</category>
+
+</topic>
+
+<!--
+
+	El usuario escoge un día por la tarde
+
+-->
+
+<topic name="tarde">
+	
+	<category> 
+	<pattern> ^ <set>horas_tarde</set> ^</pattern>
+	<template>
+		<think><set var="ocupado"><srai>IS BUSY DAY <get name="encoded_date"/> AT <star index="2"/></srai></set></think>
+		<condition var="ocupado">
+			<li value="TRUE">
+				Lo sentimos, pero esa hora está ocupada. <srai>CITA PARA EL <get name="date"/> POR LA TARDE</srai>
+			</li>
+			<li>
+				De acuerdo. La cita ha sido concertada para el día previsto a <map name="hr_abs"><srai>TWO FIRST DIGITS <star index="2"/></srai></map>. ¿Desea algo más?
+				<think><srai>MARK NOLIBRE AT <star index="2"/> ON <get name="encoded_date"/></srai>
+				<set name="topic">algo_mas</set></think>
+			</li>
+		</condition>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs_tarde</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs_tarde"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>horas_manyana</set> ^</pattern>
+	<template>
+		Recuerde que por la tarde concertamos citas de una a ocho.
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs_manyana</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs_manyana"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>horas_novalidas</set> ^</pattern>
+	<template>
+		Recuerde que a esas horas estamos cerrados. Concertamos citas por las mañanas de ocho a doce y por las tardes de una a ocho.
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs_novalidas</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs_novalidas"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ me da igual la hora ^ </pattern>
+	<template>
+		<think>
+			<set var="condicion">FALSE</set>
+			<condition var="condicion">
+				<li value="FALSE">
+					<set var="hora"><map name="horas_manyana"><srai> RANDOM 8 </srai></map>:00</set>
+					<set var="ocupado"><srai>IS BUSY DAY <get name="encoded_date"/> AT <get var="hora"/></srai></set>
+					<condition var="ocupado">
+						<li value="FALSE">
+							<set var="condicion">TRUE</set>
+						</li>
+					</condition>
+				<loop/>
+				</li>
+			</condition>
+		</think>
+		De acuerdo. La cita ha sido concertada para el día previsto a <map name="hr_abs"><srai>TWO FIRST DIGITS <get var="hora"/></srai></map>. ¿Desea algo más?
+		<think><srai>MARK NOLIBRE AT <get var="hora"/> ON <get name="encoded_date"/></srai>
+		<set name="topic">algo_mas</set></think>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ cualquier hora ^ </pattern>
+	<template>
+		<srai>ME DA IGUAL LA HORA</srai>
+	</template>
+	</category>
+
+</topic>
+
+<topic name="manyana_y_tarde">
+
+	<category>
+	<pattern> ^ <set>horas_manyana</set> ^ </pattern>
+	<template>
+		<think><set name="topic">manyana</set></think>
+		<srai><star index="2"/></srai>
+		<think>
+			<condition name="topic">
+				<li value="manyana"><set name="topic">manyana_y_tarde</set></li>
+			</condition>
+		</think>
+	</template>
+	</category>
+
+	<category>
+	<pattern> ^ <set>card_abs_manyana</set> ^ </pattern>
+	<template>
+		<srai><map name="card_abs_manyana"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category>
+	<pattern> ^ <set>horas_tarde</set> ^ </pattern>
+	<template>
+		<think><set name="topic">tarde</set></think>
+		<srai><star index="2"/></srai>
+		<think>
+			<condition name="topic">
+				<li value="tarde"><set name="topic">manyana_y_tarde</set></li>
+			</condition>
+		</think>
+	</template>
+	</category>
+
+	<category>
+	<pattern> ^ <set>card_abs_tarde</set> ^ </pattern>
+	<template>
+		<srai><map name="card_abs_tarde"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category>
+	<pattern> ^ <set>horas_novalidas</set> ^ </pattern>
+	<template>
+		Recuerde que a esas horas estamos cerrados. Concertamos citas por las mañanas de ocho a doce y por las tardes de una a ocho.
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ <set>card_abs_novalidas</set> ^</pattern>
+	<template>
+		<srai><map name="card_abs_novalidas"><star index="2"/></map>:00</srai>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ me da igual la hora ^ </pattern>
+	<template>
+		<think>
+			<set var="condicion">FALSE</set>
+			<condition var="condicion">
+				<li value="FALSE">
+					<set var="hora"><map name="horas"><srai> RANDOM 13 </srai></map>:00</set>
+					<set var="ocupado"><srai>IS BUSY DAY <get name="encoded_date"/> AT <get var="hora"/></srai></set>
+					<condition var="ocupado">
+						<li value="FALSE">
+							<set var="condicion">TRUE</set>
+						</li>
+					</condition>
+				<loop/>
+				</li>
+			</condition>
+		</think>
+		De acuerdo. La cita ha sido concertada para el día previsto a <map name="hr_abs"><srai>TWO FIRST DIGITS <get var="hora"/></srai></map>. ¿Desea algo más?
+		<think><srai>MARK NOLIBRE AT <get var="hora"/> ON <get name="encoded_date"/></srai>
+		<set name="topic">algo_mas</set></think>
+	</template>
+	</category>
+
+	<category> 
+	<pattern> ^ cualquier hora ^ </pattern>
+	<template>
+		<srai>ME DA IGUAL LA HORA</srai>
+	</template>
+	</category>
+
+	<category>
+	<pattern> Por la tarde me viene mal </pattern>
+	<template>
+		De acuerdo. Podemos concertar la cita por la mañana entonces. ¿Qué hora le viene bien?
+		<think><set name="topic">manyana</set></think>
+	</template>
+	</category>
+
+	<category>
+	<pattern> Por la tarde no puedo </pattern>
+	<template>
+		<srai>POR LA TARDE ME VIENE MAL</srai>
+	</template>
+	</category>
+
+	<category>
+	<pattern> Prefiero por la mañana </pattern>
+	<template>
+		<srai>POR LA TARDE ME VIENE MAL</srai>
+	</template>
+	</category>
+
+	<category>
+	<pattern> Por la mañana me viene [bien mejor] </pattern>
+	<template>
+		<srai>POR LA TARDE ME VIENE MAL</srai>
+	</template>
+	</category>
+
+	<category>
+	<pattern> Por la mañana me viene mal </pattern>
+	<template>
+		De acuerdo. Podemos concertar la cita por la tarde entonces. ¿Qué hora le viene bien?
+		<think><set name="topic">tarde</set></think>
+	</template>
+	</category>
+
+	<category>
+	<pattern> Por la mañana no puedo </pattern>
+	<template>
+		<srai>POR LA MAÑANA ME VIENE MAL</srai>
+	</template>
+	</category>
+
+	<category>
+	<pattern> Prefiero por la tarde </pattern>
+	<template>
+		<srai>POR LA MAÑANA ME VIENE MAL</srai>
+	</template>
+	</category>
+
+	<category>
+	<pattern> Por la tarde me viene [bien mejor] </pattern>
+	<template>
+		<srai>POR LA MAÑANA ME VIENE MAL</srai>
+	</template>
+	</category>
+
+</topic>
+
+<topic name="manyana_u_otro_dia">
+
+	<category>
+	<pattern>Me interesa</pattern>
+	<template>
+		De acuerdo. ¿Qué hora le vendría bien?
+		<think><set name="topic">manyana</set></think>
+	</template>
+	</category>
+
+	<category>
+	<pattern>^ otr+ [fecha día] ^</pattern>
+	<template>
+		¿Qué día le viene bien?
+		<think><set name="topic">otro_dia</set></think>
+	</template>
+	</category>
+</topic>
+
+<topic name="tarde_u_otro_dia">
+
+	<category>
+	<pattern>Me interesa</pattern>
+	<template>
+		De acuerdo. ¿Qué hora le vendría bien?
+		<think><set name="topic">tarde</set></think>
+	</template>
+	</category>
+
+	<category>
+	<pattern>^ otr+ [fecha día] ^</pattern>
+	<template>
+		¿Qué día le viene bien?
+		<think><set name="topic">otro_dia</set></think>
+	</template>
+	</category>
+</topic>
+
+<topic name="algo_mas">
+
+	<category>
+	<pattern>Sí</pattern>
+	<template>
+		De acuerdo. ¿De qué se trata?
+		<think><set name="topic">unknown</set></think>
+	</template>
+	</category>
+
+	<category>
+	<pattern>No</pattern>
+	<template>
+		¡Vuelva cuando quiera!
+		<think><set name="topic">unknown</set></think>
+	</template>
+	</category>
+
+</topic>
+
+</aiml>
