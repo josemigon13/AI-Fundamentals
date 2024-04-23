@@ -1,2 +1,2 @@
-# AI
-AI subject in third year
+# Fundamentals of AI
+Third-year subject
